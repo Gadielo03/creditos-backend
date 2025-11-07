@@ -4,8 +4,6 @@ import { Usuario } from '../types/usuario';
 import pool from './db';
 
 const JWT_SECRET = process.env.JWT_SECRET;
-const SALT_ROUNDS = 10;
-
 
 export type LoginResponse = {
     success: boolean,

@@ -1,17 +1,18 @@
 import { Router } from 'express';
 import alumno from '../controllers/alumno';
+import { verificarToken } from '../middleware/auth';
 const router = Router();
 
 router.get('/health', alumno.getHealth);
 
 // data retrieval routes
-router.get('/all', alumno.getAll);
-router.post('/alumnos', alumno.getAlumnos);
-router.get('/:id', alumno.getById);
+router.get('/all', verificarToken, alumno.getAll);
+router.post('/alumnos', verificarToken, alumno.getAlumnos);
+router.get('/:id', verificarToken, alumno.getById);
 
 // creatign, updating, deleting...
-router.post('/create', alumno.createAlumno);
-router.put('/update/:id', alumno.updateAlumno);
-router.delete('/delete/:id', alumno.deleteAlumno);
+router.post('/create', verificarToken, alumno.createAlumno);
+router.put('/update/:id', verificarToken, alumno.updateAlumno);
+router.delete('/delete/:id', verificarToken, alumno.deleteAlumno);
 
 export default router;
