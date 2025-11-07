@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { CreateAlumnoPayload } from '../types/alumno';
+import { getErrorResponse } from './utils';
 import servicioAlumno from '../services/alumno';
 
 const validateNumeroControl = (nctrl: string): boolean => {
@@ -13,11 +14,7 @@ const getHealth = async (req: Request, res: Response) => {
         res.json(healthResponse);
     } catch (error: any) {
         console.error('health check error: ', error);
-        res.status(500).json({
-            success: false,
-            message: error,
-            timestampt: new Date().toISOString()
-        });
+        res.status(500).json(getErrorResponse(error));
     }
 }
 
@@ -29,17 +26,13 @@ const getById = async (req: Request, res: Response) => {
 
     try {
         const alumnoData = await servicioAlumno.getById(id);
-        if (!alumnoData) {
+        if (!alumnoData.id) {
             return res.status(404).json({ error: 'Alumno not found' });
         }
         res.json(alumnoData);
     } catch (error: any) {
         console.error('getById error: ', error);
-        res.status(500).json({
-            success: false,
-            message: error,
-            timestamp: new Date().toISOString()
-        });
+        res.status(500).json(getErrorResponse(error));
     }
 }
 
@@ -49,11 +42,7 @@ const getAll = async (req: Request, res: Response) => {
         res.json(alumnos);
     } catch (error: any) {
         console.error('getAll error: ', error);
-        res.status(500).json({
-            success: false,
-            message: error,
-            timestamp: new Date().toISOString()
-        });
+        res.status(500).json(getErrorResponse(error));
     }
 }
 
@@ -68,11 +57,7 @@ const getAlumnos = async (req: Request, res: Response) => {
         res.json(alumnos);
     } catch (error: any) {
         console.error('getAlumnos error: ', error);
-        res.status(500).json({
-            success: false,
-            message: error,
-            timestamp: new Date().toISOString()
-        });
+        res.status(500).json(getErrorResponse(error));
     }
 }
 
@@ -93,11 +78,7 @@ const createAlumno = async (req: Request, res: Response) => {
         res.status(201).json({ id: alumno_id });
     } catch (error: any) {
         console.error('createAlumno error: ', error);
-        res.status(500).json({
-            success: false,
-            message: error,
-            timestamp: new Date().toISOString()
-        });
+        res.status(500).json(getErrorResponse(error));
     }
 }
 
@@ -122,11 +103,7 @@ const updateAlumno = async (req: Request, res: Response) => {
         res.status(200).json(updateAlumno);
     } catch (error: any) {
         console.error('updateAlumno error: ', error);
-        res.status(500).json({
-            success: false,
-            message: error,
-            timestamp: new Date().toISOString()
-        });
+        res.status(500).json(getErrorResponse(error));
     }
 }
 
@@ -141,11 +118,7 @@ const deleteAlumno = async (req: Request, res: Response) => {
         res.status(200).json({ id: deletedId });
     } catch (error: any) {
         console.error('deleteAlumno error: ', error);
-        res.status(500).json({
-            success: false,
-            message: error,
-            timestamp: new Date().toISOString()
-        });
+        res.status(500).json(getErrorResponse(error));
     }
 }
 

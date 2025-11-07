@@ -1,6 +1,6 @@
-import { Alumno, AlumnoDB, CreateAlumnoPayload, HealthResponse } from '../types/alumno';
+import { Alumno, AlumnoDB, CreateAlumnoPayload } from '../types/alumno';
+import { HealthResponse } from '../types/consts';
 import pool from './db';
-
 
 export const getHealth = async (): Promise<HealthResponse> => {
     return {
@@ -17,7 +17,7 @@ export const getById = async (id: string): Promise<Alumno> => {
     try {
         const res = await client.query(query, values);
         if (res.rows.length === 0) {
-            throw new Error('Alumno not found');
+            return {} as Alumno;
         }
         const row = res.rows[0];
         return {
