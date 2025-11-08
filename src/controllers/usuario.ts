@@ -26,8 +26,172 @@ const login = async (req: Request, res: Response) => {
     }
 }
 
+const createUser = async (req: Request, res: Response) => {
+    try {
+        const { nombre, contraseña, rol } = req.body;
+
+        if (!nombre || !contraseña || !rol) {
+            return res.status(400).json({
+                success: false,
+                message: 'Nombre, contraseña y rol son requeridos',
+                timestamp: new Date().toISOString()
+            });
+        }
+
+        const rolValido = ['ADMINISTRADOR', 'DOCENTE', 'ALUMNO'].includes(rol.toUpperCase());
+        if (!rolValido) {
+            return res.status(400).json({
+                success: false,
+                message: 'Rol inválido. Los roles válidos son: ADMINISTRADOR, DOCENTE, ALUMNO',
+                timestamp: new Date().toISOString()
+            });
+        }
+
+        const nuevoUsuario = await servicioUsuario.createUser(nombre, contraseña, rol.toUpperCase());
+        res.status(201).json({
+            success: true,
+            usuario: nuevoUsuario,
+            timestamp: new Date().toISOString()
+        });
+    } catch (error: any) {
+        console.error('Error al crear usuario:', error);
+        res.status(500).json({
+            success: false,
+            message: error.message || 'Error interno del servidor',
+            timestamp: new Date().toISOString()
+        });
+    }
+}
+
+const getAllUsers = async (req: Request, res: Response) => {
+    try {
+        const usuarios = await servicioUsuario.getAllUsers();
+        res.json({
+            success: true,
+            usuarios,
+            timestamp: new Date().toISOString()
+        });
+    } catch (error: any) {
+        console.error('Error al obtener usuarios:', error);
+        res.status(500).json({
+            success: false,
+            message: error.message || 'Error interno del servidor',
+            timestamp: new Date().toISOString()
+        });
+    }
+}
+
+const getUsuarios = async (req: Request, res: Response) => {
+    const { ids } = req.body;
+    if (!Array.isArray(ids)) {
+        return res.status(400).json({
+            success: false,
+            message: 'Se espera un arreglo de IDs',
+            timestamp: new Date().toISOString()
+        });
+    }
+
+    try {
+        const usuarios = await servicioUsuario.getUsuariosByIds(ids);
+        res.json({
+            success: true,
+            usuarios,
+            timestamp: new Date().toISOString()
+        });
+    } catch (error: any) {
+        console.error('Error al obtener usuarios por IDs:', error);
+        res.status(500).json({
+            success: false,
+            message: error.message || 'Error interno del servidor',
+            timestamp: new Date().toISOString()
+        });
+    }
+}
+
+const updateUserPassword = async (req: Request, res: Response) => {
+    const { id, contraseña, nuevaContraseña } = req.body;
+    console.log(id, contraseña, nuevaContraseña);
+    console.log(req.body);
+
+    if (!id || !contraseña || !nuevaContraseña) {
+        return res.status(400).json({
+            success: false,
+            message: 'ID, contraseña antigua y nueva contraseña son requeridos',
+            timestamp: new Date().toISOString()
+        });
+    }
+
+    try {
+        const updatedUser = await servicioUsuario.updateUserPassword(id, contraseña, nuevaContraseña);
+        res.json({
+            success: true,
+            usuario: updatedUser,
+            timestamp: new Date().toISOString()
+        });
+    } catch (error: any) {
+        console.error('Error al actualizar la contraseña del usuario:', error);
+        res.status(500).json({
+            success: false,
+            message: error.message || 'Error interno del servidor',
+            timestamp: new Date().toISOString()
+        });
+    }
+}
+
+const deleteUser = async (req: Request, res: Response) => {
+    const { id } = req.params;
+
+    if (!id) {
+        return res.status(400).json({
+            success: false,
+            message: 'ID es requerido',
+            timestamp: new Date().toISOString()
+        });
+    }
+
+    try {
+        const result = await servicioUsuario.deleteUser(parseInt(id));
+        res.json({
+            success: result,
+            message: result ? 'Usuario eliminado exitosamente' : 'No se pudo eliminar el usuario',
+            timestamp: new Date().toISOString()
+        });
+    } catch (error: any) {
+        console.error('Error al eliminar el usuario:', error);
+        res.status(500).json({
+            success: false,
+            message: error.message || 'Error interno del servidor',
+            timestamp: new Date().toISOString()
+        });
+    }
+}
+
+const getRoles = async (req: Request, res: Response) => {
+    try {
+        const roles = await servicioUsuario.getRoles();
+        res.json({
+            success: true,
+            roles,
+            timestamp: new Date().toISOString()
+        });
+    } catch (error: any) {
+        console.error('Error al obtener roles:', error);
+        res.status(500).json({
+            success: false,
+            message: error.message || 'Error interno del servidor',
+            timestamp: new Date().toISOString()
+        });
+    }
+}
+
 const usuario = {
-    login
+    login,
+    createUser,
+    getAllUsers,
+    getUsuarios,
+    updateUserPassword,
+    deleteUser,
+    getRoles
 }
 
 export default usuario;
