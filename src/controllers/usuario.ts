@@ -166,13 +166,32 @@ const deleteUser = async (req: Request, res: Response) => {
     }
 }
 
+const getRoles = async (req: Request, res: Response) => {
+    try {
+        const roles = await servicioUsuario.getRoles();
+        res.json({
+            success: true,
+            roles,
+            timestamp: new Date().toISOString()
+        });
+    } catch (error: any) {
+        console.error('Error al obtener roles:', error);
+        res.status(500).json({
+            success: false,
+            message: error.message || 'Error interno del servidor',
+            timestamp: new Date().toISOString()
+        });
+    }
+}
+
 const usuario = {
     login,
     createUser,
     getAllUsers,
     getUsuarios,
     updateUserPassword,
-    deleteUser
+    deleteUser,
+    getRoles
 }
 
 export default usuario;

@@ -114,12 +114,23 @@ export const getAllUsers = async (): Promise<Usuario[]> => {
     const client = await pool.connect();
 
     try {
-        const query = 'SELECT usuario_id as id, usuario_nombre as nombre FROM Usuarios';
+        const query = `
+        SELECT
+            u.usuario_id AS id,
+            u.usuario_nombre AS nombre,
+            r.rol_nombre AS rol
+        FROM Usuarios u
+        INNER JOIN Roles_usuarios ru
+            ON u.usuario_id = ru.usuario_id
+        INNER JOIN Roles r
+            ON ru.rol_id = r.rol_id;`;
+
         const res = await client.query(query);
         const usuarios: Usuario[] = res.rows.map((row) => {
             return {
                 id: row.id,
-                nombre: row.nombre
+                nombre: row.nombre,
+                roles: [row.rol]
             }
         })
         return usuarios;
@@ -139,13 +150,23 @@ export const getUsuariosByIds = async (ids: number[]): Promise<Usuario[]> => {
     const client = await pool.connect();
 
     try {
-        const query = `SELECT usuario_id as id, usuario_nombre as nombre FROM Usuarios WHERE usuario_id = ANY($1)`;
+        const query = `
+        SELECT u.usuario_id as id, u.usuario_nombre as nombre, STRING_AGG(r.rol_nombre, ',') as roles
+        FROM Usuarios u
+        INNER JOIN Roles_usuarios ru
+        ON ru.usuario_id = u.usuario_id
+        INNER JOIN Roles r
+        ON r.rol_id = ru.rol_id
+        WHERE u.usuario_id = ANY($1)
+        GROUP BY u.usuario_id, u.usuario_nombre, r.rol_nombre
+        `;
         const values = [ids];
         const res = await client.query(query, values);
         const usuarios: Usuario[] = res.rows.map((row) => {
             return {
                 id: row.id,
-                nombre: row.nombre
+                nombre: row.nombre,
+                roles: row.roles.split(',')
             }
         })
         return usuarios;
@@ -208,6 +229,21 @@ export const deleteUser = async (id: number): Promise<Boolean> => {
     }
 }
 
+const getRoles = async (): Promise<string[]> => {
+    const client = await pool.connect();
+
+    try {
+        const query = 'SELECT rol_nombre FROM Roles';
+        const res = await client.query(query);
+        return res.rows;
+    } catch (error) {
+        console.error('Error en getRoles:', error);
+        throw new Error('Error al intentar obtener roles');
+    } finally {
+        client.release();
+    }
+}
+
 const servicioUsuario = {
     login,
     verificarToken,
@@ -215,7 +251,8 @@ const servicioUsuario = {
     getAllUsers,
     getUsuariosByIds,
     updateUserPassword,
-    deleteUser
+    deleteUser,
+    getRoles
 }
 
 export default servicioUsuario;
