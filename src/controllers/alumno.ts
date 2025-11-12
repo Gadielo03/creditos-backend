@@ -100,7 +100,7 @@ const updateAlumno = async (req: Request, res: Response) => {
 
     try {
         const updatedAlumno = await servicioAlumno.updateAlumno(alu_id, alumno);
-        res.status(200).json(updateAlumno);
+        res.status(200).json(updatedAlumno);
     } catch (error: any) {
         console.error('updateAlumno error: ', error);
         res.status(500).json(getErrorResponse(error));

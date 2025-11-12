@@ -48,11 +48,7 @@ const createUser = async (req: Request, res: Response) => {
         }
 
         const nuevoUsuario = await servicioUsuario.createUser(nombre, contraseña, rol.toUpperCase());
-        res.status(201).json({
-            success: true,
-            usuario: nuevoUsuario,
-            timestamp: new Date().toISOString()
-        });
+        res.status(201).json(nuevoUsuario);
     } catch (error: any) {
         console.error('Error al crear usuario:', error);
         res.status(500).json({
@@ -66,11 +62,7 @@ const createUser = async (req: Request, res: Response) => {
 const getAllUsers = async (req: Request, res: Response) => {
     try {
         const usuarios = await servicioUsuario.getAllUsers();
-        res.json({
-            success: true,
-            usuarios,
-            timestamp: new Date().toISOString()
-        });
+        res.json(usuarios);
     } catch (error: any) {
         console.error('Error al obtener usuarios:', error);
         res.status(500).json({
@@ -93,11 +85,7 @@ const getUsuarios = async (req: Request, res: Response) => {
 
     try {
         const usuarios = await servicioUsuario.getUsuariosByIds(ids);
-        res.json({
-            success: true,
-            usuarios,
-            timestamp: new Date().toISOString()
-        });
+        res.json(usuarios);
     } catch (error: any) {
         console.error('Error al obtener usuarios por IDs:', error);
         res.status(500).json({
@@ -110,8 +98,6 @@ const getUsuarios = async (req: Request, res: Response) => {
 
 const updateUserPassword = async (req: Request, res: Response) => {
     const { id, contraseña, nuevaContraseña } = req.body;
-    console.log(id, contraseña, nuevaContraseña);
-    console.log(req.body);
 
     if (!id || !contraseña || !nuevaContraseña) {
         return res.status(400).json({
@@ -123,11 +109,7 @@ const updateUserPassword = async (req: Request, res: Response) => {
 
     try {
         const updatedUser = await servicioUsuario.updateUserPassword(id, contraseña, nuevaContraseña);
-        res.json({
-            success: true,
-            usuario: updatedUser,
-            timestamp: new Date().toISOString()
-        });
+        res.json(updatedUser);
     } catch (error: any) {
         console.error('Error al actualizar la contraseña del usuario:', error);
         res.status(500).json({
