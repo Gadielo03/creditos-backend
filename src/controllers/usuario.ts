@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import servicioUsuario from '../services/usuario';
+import { Usuario } from '../types/usuario';
 
 const login = async (req: Request, res: Response) => {
     try {
@@ -166,6 +167,39 @@ const getRoles = async (req: Request, res: Response) => {
     }
 }
 
+const updateUserInfo = async (req: Request, res: Response) => {
+    const { id, nombre, rol } = req.body;
+
+    if (!id) {
+        return res.status(400).json({
+            message: 'ID es requerido'
+        });
+    }
+
+    if (!nombre && !rol) {
+        return res.status(400).json({
+            message: 'Al menos un campo (nombre o rol) debe ser proporcionado para actualizar'
+        });
+    }
+
+    const roles = Array.isArray(rol) ? rol : rol ? [rol] : undefined;
+    const usuario: Usuario = {
+        id,
+        nombre: nombre || undefined,
+        roles: roles
+    }
+
+    try {
+        const updatedUser = await servicioUsuario.updateUserInfo(usuario);
+        res.json(updatedUser);
+    } catch (error: any) {
+        console.error('Error al actualizar la información del usuario:', error);
+        res.status(500).json({
+            message: error.message || 'Error interno del servidor',
+        });
+    }
+}
+
 const usuario = {
     login,
     createUser,
@@ -173,7 +207,8 @@ const usuario = {
     getUsuarios,
     updateUserPassword,
     deleteUser,
-    getRoles
+    getRoles,
+    updateUserInfo
 }
 
 export default usuario;

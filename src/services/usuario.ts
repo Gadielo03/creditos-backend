@@ -115,22 +115,21 @@ export const getAllUsers = async (): Promise<Usuario[]> => {
 
     try {
         const query = `
-        SELECT
-            u.usuario_id AS id,
-            u.usuario_nombre AS nombre,
-            r.rol_nombre AS rol
+        SELECT u.usuario_id as id, u.usuario_nombre as nombre, array_agg(r.rol_nombre) as roles
         FROM Usuarios u
         INNER JOIN Roles_usuarios ru
-            ON u.usuario_id = ru.usuario_id
+        ON ru.usuario_id = u.usuario_id
         INNER JOIN Roles r
-            ON ru.rol_id = r.rol_id;`;
+        ON r.rol_id = ru.rol_id
+        GROUP BY u.usuario_id, u.usuario_nombre
+        `;
 
         const res = await client.query(query);
         const usuarios: Usuario[] = res.rows.map((row) => {
             return {
                 id: row.id,
                 nombre: row.nombre,
-                roles: [row.rol]
+                roles: [row.roles]
             }
         })
         return usuarios;
@@ -151,14 +150,14 @@ export const getUsuariosByIds = async (ids: number[]): Promise<Usuario[]> => {
 
     try {
         const query = `
-        SELECT u.usuario_id as id, u.usuario_nombre as nombre, STRING_AGG(r.rol_nombre, ',') as roles
+        SELECT u.usuario_id as id, u.usuario_nombre as nombre, array_agg(r.rol_nombre) as roles
         FROM Usuarios u
         INNER JOIN Roles_usuarios ru
         ON ru.usuario_id = u.usuario_id
         INNER JOIN Roles r
         ON r.rol_id = ru.rol_id
         WHERE u.usuario_id = ANY($1)
-        GROUP BY u.usuario_id, u.usuario_nombre, r.rol_nombre
+        GROUP BY u.usuario_id, u.usuario_nombre
         `;
         const values = [ids];
         const res = await client.query(query, values);
@@ -166,7 +165,7 @@ export const getUsuariosByIds = async (ids: number[]): Promise<Usuario[]> => {
             return {
                 id: row.id,
                 nombre: row.nombre,
-                roles: row.roles.split(',')
+                roles: row.roles
             }
         })
         return usuarios;
@@ -244,6 +243,57 @@ const getRoles = async (): Promise<string[]> => {
     }
 }
 
+const updateUserInfo = async (user: Usuario): Promise<Usuario> => {
+    const client = await pool.connect();
+
+    try {
+        if (user.nombre) {
+            const query = 'UPDATE Usuarios SET usuario_nombre = $1 WHERE usuario_id = $2';
+            await client.query(query, [user.nombre, user.id]);
+        }
+        if (user.roles) {
+            const currentRolesQuery = 'SELECT rol_id, rol_nombre FROM roles';
+            const res = await client.query(currentRolesQuery);
+            const roles = res.rows;
+
+            const validatedRoles = roles.filter(r => user.roles?.includes(r.rol_nombre));
+            console.log('validatedRoles:', validatedRoles);
+            if (validatedRoles.length === 0) {
+                throw new Error('Roles inválidos proporcionados');
+            }
+            const deleteRolesQuery = 'DELETE FROM Roles_usuarios WHERE usuario_id = $1';
+            await client.query(deleteRolesQuery, [user.id]);
+
+            const insertRoleQuery = 'INSERT INTO Roles_usuarios (usuario_id, rol_id) VALUES ($1, $2)';
+            for (const role of validatedRoles) {
+                await client.query(insertRoleQuery, [user.id, role.rol_id]);
+            }
+        }
+
+        const queryUser = `
+            SELECT u.usuario_id, u.usuario_nombre, array_agg(r.rol_nombre) as roles
+            FROM usuarios AS u
+            INNER JOIN roles_usuarios AS ru ON u.usuario_id = ru.usuario_id
+            INNER JOIN roles AS r ON r.rol_id = ru.rol_id
+            WHERE u.usuario_id = $1
+            GROUP BY u.usuario_id, u.usuario_nombre
+        `;
+
+        const res = await client.query(queryUser, [user.id]);
+        return {
+            id: res.rows[0].usuario_id,
+            nombre: res.rows[0].usuario_nombre,
+            roles: res.rows[0].roles
+        };
+
+    } catch (error) {
+        console.error('Error en updateUserInfo:', error);
+        throw new Error('Error al intentar actualizar la información del usuario');
+    } finally {
+        client.release();
+    }
+}
+
 const servicioUsuario = {
     login,
     verificarToken,
@@ -252,7 +302,8 @@ const servicioUsuario = {
     getUsuariosByIds,
     updateUserPassword,
     deleteUser,
-    getRoles
+    getRoles,
+    updateUserInfo
 }
 
 export default servicioUsuario;
