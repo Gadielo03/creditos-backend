@@ -39,7 +39,7 @@ const createUser = async (req: Request, res: Response) => {
             });
         }
 
-        const nuevoUsuario = await servicioUsuario.createUser(nombre, contraseña, roles);
+        const nuevoUsuario = await servicioUsuario.createUser(nombre, contraseña, Array.isArray(roles) ? roles : [roles]);
         res.status(201).json(nuevoUsuario);
     } catch (error: any) {
         console.error('Error al crear usuario:', error);
