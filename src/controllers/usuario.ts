@@ -29,26 +29,17 @@ const login = async (req: Request, res: Response) => {
 
 const createUser = async (req: Request, res: Response) => {
     try {
-        const { nombre, contraseña, rol } = req.body;
+        const { nombre, contraseña, roles } = req.body;
 
-        if (!nombre || !contraseña || !rol) {
+        if (!nombre || !contraseña || !roles) {
             return res.status(400).json({
                 success: false,
-                message: 'Nombre, contraseña y rol son requeridos',
+                message: 'Nombre, contraseña y roles son requeridos',
                 timestamp: new Date().toISOString()
             });
         }
 
-        const rolValido = ['ADMINISTRADOR', 'DOCENTE', 'ALUMNO'].includes(rol.toUpperCase());
-        if (!rolValido) {
-            return res.status(400).json({
-                success: false,
-                message: 'Rol inválido. Los roles válidos son: ADMINISTRADOR, DOCENTE, ALUMNO',
-                timestamp: new Date().toISOString()
-            });
-        }
-
-        const nuevoUsuario = await servicioUsuario.createUser(nombre, contraseña, rol.toUpperCase());
+        const nuevoUsuario = await servicioUsuario.createUser(nombre, contraseña, roles);
         res.status(201).json(nuevoUsuario);
     } catch (error: any) {
         console.error('Error al crear usuario:', error);

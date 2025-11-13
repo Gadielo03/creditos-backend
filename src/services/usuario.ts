@@ -2,6 +2,7 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { Usuario } from '../types/usuario';
 import pool from './db';
+import { get } from 'http';
 
 const JWT_SECRET = process.env.JWT_SECRET;
 
@@ -69,7 +70,7 @@ export const verificarToken = async (token: string): Promise<{ id: number, nombr
     }
 }
 
-export const createUser = async (name: string, password: string, rol: string): Promise<Usuario> => {
+export const createUser = async (name: string, password: string, roles: string): Promise<Usuario> => {
     const client = await pool.connect();
     if (name.length === 0 || password.length === 0) {
         throw new Error('Nombre y contraseña no pueden estar vacíos');
@@ -82,26 +83,48 @@ export const createUser = async (name: string, password: string, rol: string): P
             throw new Error('El nombre de usuario ya existe');
         }
 
-        const getRolIdQuery = 'SELECT rol_id FROM Roles WHERE rol_nombre = $1 LIMIT 1';
-        const rolResult = await client.query(getRolIdQuery, [rol]);
-        if (rolResult.rows.length === 0) {
-            throw new Error('Rol inválido');
-        }
-        const rolId = rolResult.rows[0].rol_id;
+        // const getRolIdQuery = 'SELECT rol_id FROM Roles WHERE rol_nombre = $1 LIMIT 1';
+        // const rolResult = await client.query(getRolIdQuery, [rol]);
+        // if (rolResult.rows.length === 0) {
+        //     throw new Error('Rol inválido');
+        // }
+        // const rolId = rolResult.rows[0].rol_id;
+
+        // const saltRounds = process.env.SALT_ROUND ? parseInt(process.env.SALT_ROUND) : 10;
+        // const hashedPassword = bcrypt.hashSync(password, saltRounds);
+
+        // const query = 'INSERT INTO Usuarios (usuario_nombre, usuario_contraseña) VALUES ($1, $2) RETURNING usuario_id, usuario_nombre';
+        // const rows = await client.query(query, [name, hashedPassword]);
+        // const newUser: Usuario = {
+        //     id: rows.rows[0].usuario_id,
+        //     nombre: rows.rows[0].usuario_nombre
+        // };
+
+        // const insertRolUsuarioQuery = 'INSERT INTO Roles_usuarios (usuario_id, rol_id) VALUES ($1, $2)';
+        // await client.query(insertRolUsuarioQuery, [newUser.id, rolId]);
+        // return newUser;
 
         const saltRounds = process.env.SALT_ROUND ? parseInt(process.env.SALT_ROUND) : 10;
         const hashedPassword = bcrypt.hashSync(password, saltRounds);
 
-        const query = 'INSERT INTO Usuarios (usuario_nombre, usuario_contraseña) VALUES ($1, $2) RETURNING usuario_id, usuario_nombre';
-        const rows = await client.query(query, [name, hashedPassword]);
-        const newUser: Usuario = {
-            id: rows.rows[0].usuario_id,
-            nombre: rows.rows[0].usuario_nombre
-        };
+        const insertUserQuery = 'INSERT INTO usuarios (usuario_nombre, usuario_contraseña) VALUES ($1, $2) RETURNING usuario_id, usuario_nombre, usuario_contraseña';
+        const userResult = await client.query(insertUserQuery, [name, hashedPassword]);
+        const newUserId = userResult.rows[0].usuario_id;
+        const getRolIdsQuery = `
+            SELECT rol_id FROM roles WHERE rol_nombre = ANY($1)
+        `;
+        const rolIdsResult = await client.query(getRolIdsQuery, [roles]);
+        if (rolIdsResult.rows.length === 0) {
+            throw new Error('Roles inválidos');
+        }
 
         const insertRolUsuarioQuery = 'INSERT INTO Roles_usuarios (usuario_id, rol_id) VALUES ($1, $2)';
-        await client.query(insertRolUsuarioQuery, [newUser.id, rolId]);
-        return newUser;
+        for (const row of rolIdsResult.rows) {
+            await client.query(insertRolUsuarioQuery, [newUserId, row.rol_id]);
+        }
+
+        const newUser = await getUsuariosByIds(newUserId ? [newUserId] : []);
+        return newUser[0];
     } catch (error) {
         console.error('Error en createUser:', error);
         throw new Error(error.message || 'Error al intentar crear el usuario');
