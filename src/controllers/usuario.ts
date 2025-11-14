@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import servicioUsuario from '../services/usuario';
+import { Usuario } from '../types/usuario';
 
 const login = async (req: Request, res: Response) => {
     try {
@@ -28,26 +29,17 @@ const login = async (req: Request, res: Response) => {
 
 const createUser = async (req: Request, res: Response) => {
     try {
-        const { nombre, contraseña, rol } = req.body;
+        const { nombre, contraseña, roles } = req.body;
 
-        if (!nombre || !contraseña || !rol) {
+        if (!nombre || !contraseña || !roles) {
             return res.status(400).json({
                 success: false,
-                message: 'Nombre, contraseña y rol son requeridos',
+                message: 'Nombre, contraseña y roles son requeridos',
                 timestamp: new Date().toISOString()
             });
         }
 
-        const rolValido = ['ADMINISTRADOR', 'DOCENTE', 'ALUMNO'].includes(rol.toUpperCase());
-        if (!rolValido) {
-            return res.status(400).json({
-                success: false,
-                message: 'Rol inválido. Los roles válidos son: ADMINISTRADOR, DOCENTE, ALUMNO',
-                timestamp: new Date().toISOString()
-            });
-        }
-
-        const nuevoUsuario = await servicioUsuario.createUser(nombre, contraseña, rol.toUpperCase());
+        const nuevoUsuario = await servicioUsuario.createUser(nombre, contraseña, Array.isArray(roles) ? roles : [roles]);
         res.status(201).json(nuevoUsuario);
     } catch (error: any) {
         console.error('Error al crear usuario:', error);
@@ -162,6 +154,39 @@ const getRoles = async (req: Request, res: Response) => {
     }
 }
 
+const updateUserInfo = async (req: Request, res: Response) => {
+    const { id, nombre, rol } = req.body;
+
+    if (!id) {
+        return res.status(400).json({
+            message: 'ID es requerido'
+        });
+    }
+
+    if (!nombre && !rol) {
+        return res.status(400).json({
+            message: 'Al menos un campo (nombre o rol) debe ser proporcionado para actualizar'
+        });
+    }
+
+    const roles = Array.isArray(rol) ? rol : rol ? [rol] : undefined;
+    const usuario: Usuario = {
+        id,
+        nombre: nombre || undefined,
+        roles: roles
+    }
+
+    try {
+        const updatedUser = await servicioUsuario.updateUserInfo(usuario);
+        res.json(updatedUser);
+    } catch (error: any) {
+        console.error('Error al actualizar la información del usuario:', error);
+        res.status(500).json({
+            message: error.message || 'Error interno del servidor',
+        });
+    }
+}
+
 const usuario = {
     login,
     createUser,
@@ -169,7 +194,8 @@ const usuario = {
     getUsuarios,
     updateUserPassword,
     deleteUser,
-    getRoles
+    getRoles,
+    updateUserInfo
 }
 
 export default usuario;
