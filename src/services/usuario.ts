@@ -131,7 +131,7 @@ export const getAllUsers = async (): Promise<Usuario[]> => {
             return {
                 id: row.id,
                 nombre: row.nombre,
-                roles: [row.roles]
+                roles: row.roles
             }
         })
         return usuarios;

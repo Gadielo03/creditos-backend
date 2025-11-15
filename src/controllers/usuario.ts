@@ -169,7 +169,15 @@ const updateUserInfo = async (req: Request, res: Response) => {
         });
     }
 
-    const roles = Array.isArray(rol) ? rol : rol ? [rol] : undefined;
+    let roles = undefined;
+    if (rol) {
+        if (Array.isArray(rol)) {
+            roles = rol.flat(Infinity);
+        } else {
+            roles = [rol];
+        }
+    }
+
     const usuario: Usuario = {
         id,
         nombre: nombre || undefined,
