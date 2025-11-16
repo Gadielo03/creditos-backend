@@ -15,7 +15,6 @@ const getAllActividades = async (req: Request, res: Response) => {
 const createActividad = async (req: Request, res: Response) => {
     const {
         act_nombre,
-        act_semestre,
         act_creditos,
         act_hor_ini,
         act_hor_fin,
@@ -23,7 +22,7 @@ const createActividad = async (req: Request, res: Response) => {
         doc_responsable
     } = req.body;
 
-    if (!act_nombre || !act_semestre || !act_creditos || !act_hor_ini ||
+    if (!act_nombre || !act_creditos || !act_hor_ini ||
         !act_hor_fin || !per_id || !doc_responsable) {
         return res.status(400).json({ error: 'Faltan datos obligatorios para crear la actividad' });
     }
@@ -31,7 +30,6 @@ const createActividad = async (req: Request, res: Response) => {
     const newActividadData: types.ActividadDB = {
         act_id: '',
         act_nombre,
-        act_semestre,
         act_creditos,
         act_hor_ini,
         act_hor_fin,
