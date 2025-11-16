@@ -4,7 +4,6 @@ import { Docente } from './docente';
 export type Actividad = {
     act_id: string;
     act_nombre: string;
-    act_semestre: string;
     act_creditos: number;
     act_hora_inicio: string;
     act_hora_fin: string;
@@ -15,7 +14,6 @@ export type Actividad = {
 export type ActividadDB = {
     act_id: string;
     act_nombre: string;
-    act_semestre: number;
     act_creditos: number;
     act_hor_ini: string;
     act_hor_fin: string;
@@ -26,7 +24,6 @@ export type ActividadDB = {
 export type ActividadRaw = {
     act_id: string;
     act_nombre: string;
-    act_semestre: string;
     act_creditos: number;
     act_hor_ini: string;
     act_hor_fin: string;

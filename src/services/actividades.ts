@@ -7,7 +7,6 @@ const QueryActividad = `
 SELECT
     a.act_id        as act_id,
     a.act_nombre    as act_nombre,
-    a.act_semestre  as act_semestre,
     a.act_creditos  as act_creditos,
     a.act_hor_ini   as act_hor_ini,
     a.act_hor_fin   as act_hor_fin,
@@ -46,7 +45,6 @@ const getAllActividades = async (): Promise<types.Actividad[]> => {
          return {
             act_id: row.act_id,
             act_nombre: row.act_nombre,
-            act_semestre: row.act_semestre,
             act_creditos: row.act_creditos,
             act_hora_inicio: row.act_hor_ini,
             act_hora_fin: row.act_hor_fin,
@@ -75,27 +73,26 @@ const createActividad = async (act: types.ActividadDB): Promise<types.Actividad>
          throw new Error('Docente inválido: No corresponde a ningun registro de la base de datos');
       }
 
-      query = await pool.query(existingPeriodQuery, [act.per_id]);
+      query = await cliente.query(existingPeriodQuery, [act.per_id]);
       if (query.rows.length == 0) {
          throw new Error('Periodo inválido: No corresponde a ningun registro de la base de datos');
       }
 
       const insertActividad = `
             INSERT INTO
-                Actividades (act_nombre, act_semestre, act_creditos, act_hor_ini, act_hor_fin, per_id, doc_responsable)
-            VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING act_id
+                Actividades (act_nombre, act_creditos, act_hor_ini, act_hor_fin, per_id, doc_responsable)
+            VALUES ($1, $2, $3, $4, $5, $6) RETURNING act_id
         `;
 
       const values = [];
       values.push(act.act_nombre);
-      values.push(act.act_semestre);
       values.push(act.act_creditos);
       values.push(act.act_hor_ini);
       values.push(act.act_hor_fin);
       values.push(act.per_id);
       values.push(act.doc_responsable);
 
-      query = await pool.query(insertActividad, values);
+      query = await cliente.query(insertActividad, values);
       const newId = query.rows[0].act_id;
       const newAct: types.Actividad = await getActividadById(newId);
       if (!newAct) {
@@ -118,10 +115,6 @@ const updateActividad = async (act: Partial<types.ActividadDB>): Promise<types.A
    if (act.act_nombre !== undefined) {
       updateParams.push('act_nombre = $' + (updateParams.length + 1));
       updateValues.push(act.act_nombre);
-   }
-   if (act.act_semestre !== undefined) {
-      updateParams.push('act_semestre = $' + (updateParams.length + 1));
-      updateValues.push(act.act_semestre);
    }
    if (act.act_creditos !== undefined) {
       updateParams.push('act_creditos = $' + (updateParams.length + 1));
@@ -199,7 +192,6 @@ const getActividadById = async (id: string): Promise<types.Actividad> => {
       const actividadFinal: types.Actividad = {
          act_id: actividad.act_id,
          act_nombre: actividad.act_nombre,
-         act_semestre: actividad.act_semestre,
          act_creditos: actividad.act_creditos,
          act_hora_inicio: actividad.act_hor_ini,
          act_hora_fin: actividad.act_hor_fin,
