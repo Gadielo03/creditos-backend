@@ -5,14 +5,12 @@ const router = Router();
 
 router.get('/health', alumno.getHealth);
 
-// data retrieval routes
-router.get('/all', verificarToken, alumno.getAll);
-router.post('/alumnos', verificarToken, alumno.getAlumnos);
-router.get('/:id', verificarToken, alumno.getById);
-
-// creatign, updating, deleting...
 router.post('/create', verificarToken, alumno.createAlumno);
 router.put('/update/:id', verificarToken, alumno.updateAlumno);
 router.delete('/delete/:id', verificarToken, alumno.deleteAlumno);
+
+router.get('/all', verificarToken, alumno.getAll);
+router.post('/alumnos', verificarToken, alumno.getAlumnos);
+router.get('/:id', verificarToken, alumno.getById);
 
 export default router;
