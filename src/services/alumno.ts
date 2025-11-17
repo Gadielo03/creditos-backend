@@ -83,7 +83,7 @@ export const getAlumnos = async (ids: string[]): Promise<Alumno[]> => {
     }
 }
 
-export const createAlumno = async (alumno: CreateAlumnoPayload): Promise<string> => {
+export const createAlumno = async (alumno: CreateAlumnoPayload): Promise<Alumno> => {
     const missingFields = [];
     if (!alumno.nctrl) missingFields.push('nctrl');
     if (!alumno.nombres) missingFields.push('nombres');
@@ -99,7 +99,13 @@ export const createAlumno = async (alumno: CreateAlumnoPayload): Promise<string>
     const client = await pool.connect();
     try {
         const res = await client.query(query, values);
-        return res.rows[0].alu_id;
+        const newId = res.rows[0].alu_id;
+        const qNewAlumno: Alumno[] = await getAlumnos([newId]);
+        if (qNewAlumno.length == 0) {
+            throw new Error(`Error en buscar al nuevo alumno con id: ${newId}`);
+        }
+        return qNewAlumno[0];
+
     } catch (error) {
         console.error('Database insert error: ', error);
         throw error;
