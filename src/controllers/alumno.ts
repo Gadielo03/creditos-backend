@@ -74,8 +74,8 @@ const createAlumno = async (req: Request, res: Response) => {
     }
 
     try {
-        const alumno_id = await servicioAlumno.createAlumno(alumno);
-        res.status(201).json({ id: alumno_id });
+        const newAlumno = await servicioAlumno.createAlumno(alumno);
+        res.status(201).json(newAlumno);
     } catch (error: any) {
         console.error('createAlumno error: ', error);
         res.status(500).json(getErrorResponse(error));
