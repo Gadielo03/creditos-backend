@@ -66,7 +66,7 @@ CREATE TABLE Creditos (
     cred_fecha DATE NOT NULL,
     UNIQUE (alu_id, act_id),
     FOREIGN KEY (alu_id) REFERENCES Alumno(alu_id) ON DELETE CASCADE,
-    FOREIGN KEY (act_id) REFERENCES Actividades(act_id) ON DELETE RESTRICT
+    FOREIGN KEY (act_id) REFERENCES Actividades(act_id) ON DELETE CASCADE
 );
 
 -- Creación de la tabla Instrucciones
@@ -76,6 +76,6 @@ CREATE TABLE Instrucciones (
     act_id INTEGER NOT NULL,
     alu_id INTEGER NOT NULL,
     FOREIGN KEY (doc_id) REFERENCES Docente(doc_id) ON DELETE RESTRICT,
-    FOREIGN KEY (act_id) REFERENCES Actividades(act_id) ON DELETE RESTRICT,
+    FOREIGN KEY (act_id) REFERENCES Actividades(act_id) ON DELETE CASCADE,
     FOREIGN KEY (alu_id) REFERENCES Alumno(alu_id) ON DELETE RESTRICT
 );
