@@ -122,6 +122,16 @@ const deleteAlumno = async (req: Request, res: Response) => {
     }
 }
 
+const getAllCreditosReport = async (req: Request, res: Response) => {
+    try {
+        const reports = await servicioAlumno.getAllCreditosReport();
+        res.json(reports);
+    } catch (error: any) {
+        console.error('getAllCreditosReport error: ', error);
+        res.status(500).json(getErrorResponse(error));
+    }
+}
+
 const alumno = {
     getHealth,
     getById,
@@ -129,7 +139,8 @@ const alumno = {
     getAlumnos,
     createAlumno,
     updateAlumno,
-    deleteAlumno
+    deleteAlumno,
+    getAllCreditosReport
 }
 
 export default alumno;

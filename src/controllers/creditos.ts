@@ -18,10 +18,8 @@ const getCreditoById = async (req: Request, res: Response) => {
 }
 
 const getAllCreditos = async (req: Request, res: Response) => {
-    console.log('getAll controller');
     try {
         const allCreditos: types.Credito[] = await service.getAllCreditos();
-        console.log('allCreditos', allCreditos);
         return res.json(allCreditos);
     } catch (error: unknown) {
         return res.status(500).json(getErrorResponse(error));

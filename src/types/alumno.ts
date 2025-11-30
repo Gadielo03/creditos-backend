@@ -17,3 +17,14 @@ export type CreateAlumnoPayload = {
     nombres: string;
     apellidos: string;
 }
+
+
+export type AlumnoCreditosReport = {
+    alumno: Alumno;
+    totalCreditos: number;
+    creditos: {
+        docente: string;
+        actividad: string;
+        fecha: string;
+    }[];
+}

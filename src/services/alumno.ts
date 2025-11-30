@@ -1,4 +1,4 @@
-import { Alumno, AlumnoDB, CreateAlumnoPayload } from '../types/alumno';
+import { Alumno, AlumnoDB, CreateAlumnoPayload, AlumnoCreditosReport } from '../types/alumno';
 import { HealthResponse } from '../types/consts';
 import pool from './db';
 
@@ -172,11 +172,77 @@ export const deleteAlumno = async (id: string): Promise<string> => {
 }
 
 
+export const getAllCreditosReport = async (): Promise<AlumnoCreditosReport[]> => {
+    const query = `
+        SELECT 
+            a.alu_id,
+            a.alu_nctrl,
+            a.alu_nombres,
+            a.alu_apellidos,
+            act.act_nombre,
+            act.act_creditos,
+            c.cred_fecha,
+            d.doc_nombre,
+            d.doc_apellidos
+        FROM alumno a
+        LEFT JOIN creditos c ON a.alu_id = c.alu_id
+        LEFT JOIN actividades act ON c.act_id = act.act_id
+        LEFT JOIN docente d ON act.doc_responsable = d.doc_id
+        ORDER BY a.alu_id, c.cred_fecha DESC
+    `;
+
+    const client = await pool.connect();
+    try {
+        const res = await client.query(query);
+        
+        if (res.rows.length === 0) {
+            return [];
+        }
+
+        const alumnosMap = new Map<string, AlumnoCreditosReport>();
+
+        res.rows.forEach(row => {
+            const aluId = row.alu_id.toString();
+
+            if (!alumnosMap.has(aluId)) {
+                alumnosMap.set(aluId, {
+                    alumno: {
+                        id: row.alu_id,
+                        nctrl: row.alu_nctrl,
+                        nombres: row.alu_nombres,
+                        apellidos: row.alu_apellidos
+                    },
+                    totalCreditos: 0,
+                    creditos: []
+                });
+            }
+
+            if (row.act_nombre !== null) {
+                const report = alumnosMap.get(aluId)!;
+                report.totalCreditos += parseFloat(row.act_creditos) || 0;
+                report.creditos.push({
+                    docente: `${row.doc_nombre || ''} ${row.doc_apellidos || ''}`.trim(),
+                    actividad: row.act_nombre || '',
+                    fecha: row.cred_fecha || ''
+                });
+            }
+        });
+
+        return Array.from(alumnosMap.values());
+    } catch (error) {
+        console.error('Database query error: ', error);
+        throw error;
+    } finally {
+        client.release();
+    }
+}
+
 const dataRetrieve = {
     getHealth,
     getById,
     getAll,
-    getAlumnos
+    getAlumnos,
+    getAllCreditosReport
 }
 
 const dataModify = {
