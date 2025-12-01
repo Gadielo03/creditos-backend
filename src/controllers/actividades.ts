@@ -8,6 +8,7 @@ const getAllActividades = async (req: Request, res: Response) => {
         const allActividades: types.Actividad[] = await service.getAllActividades();
         return res.json(allActividades);
     } catch (error: unknown) {
+        console.error('getAllActividades error: ', error);
         res.status(500).json(getErrorResponse(error))
     }
 }
@@ -41,6 +42,7 @@ const createActividad = async (req: Request, res: Response) => {
         const newAct: types.Actividad = await service.createActividad(newActividadData);
         return res.json(newAct);
     } catch (error: unknown) {
+        console.error('createActividad error: ', error);
         res.status(500).json(getErrorResponse(error))
     }
 };
@@ -55,6 +57,7 @@ const updateActividad = async (req: Request, res: Response) => {
         const updatedAct: types.Actividad = await service.updateActividad(actividad);
         return res.json(updatedAct);
     } catch (error: unknown) {
+        console.error('updateActividad error: ', error);
         return res.status(500).json(getErrorResponse(error))
     }
 }
@@ -69,6 +72,7 @@ const getActividadById = async (req: Request, res: Response) => {
         const actividades: types.Actividad = await service.getActividadById(id);
         return res.json(actividades);
     } catch (error: unknown) {
+        console.error('getActividadById error: ', error);
         res.status(500).json(getErrorResponse(error));
     }
 };
@@ -80,6 +84,7 @@ const deleteActividad = async (req: Request, res: Response) => {
         const deleted = await service.deleteActividad(id);
         return res.json({ success: deleted })
     } catch (error: unknown) {
+        console.error('deleteActividad error: ', error);
         return res.status(500).json(getErrorResponse(error))
     }
 }

@@ -219,11 +219,13 @@ export const getAllCreditosReport = async (): Promise<AlumnoCreditosReport[]> =>
 
             if (row.act_nombre !== null) {
                 const report = alumnosMap.get(aluId)!;
-                report.totalCreditos += parseFloat(row.act_creditos) || 0;
+                const creditosActividad = parseFloat(row.act_creditos) || 0;
+                report.totalCreditos += creditosActividad;
                 report.creditos.push({
                     docente: `${row.doc_nombre || ''} ${row.doc_apellidos || ''}`.trim(),
                     actividad: row.act_nombre || '',
-                    fecha: row.cred_fecha || ''
+                    fecha: row.cred_fecha || '',
+                    creditos: creditosActividad
                 });
             }
         });

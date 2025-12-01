@@ -13,6 +13,7 @@ const getCreditoById = async (req: Request, res: Response) => {
         const credito: types.Credito = await service.getCreditoById(id);
         return res.json(credito);
     } catch (error: unknown) {
+        console.error('getCreditoById error: ', error);
         return res.status(500).json(getErrorResponse(error))
     }
 }
@@ -22,6 +23,7 @@ const getAllCreditos = async (req: Request, res: Response) => {
         const allCreditos: types.Credito[] = await service.getAllCreditos();
         return res.json(allCreditos);
     } catch (error: unknown) {
+        console.error('getAllCreditos error: ', error);
         return res.status(500).json(getErrorResponse(error));
     }
 }
@@ -37,6 +39,7 @@ const getCreditoByAlumno = async (req: Request, res: Response) => {
         const creditos: types.Credito[] = await service.getCreditosByAlumno(alu_id);
         return res.json(creditos);
     } catch (error: unknown) {
+        console.error('getCreditoByAlumno error: ', error);
         return res.status(500).json(getErrorResponse(error));
     }
 }
@@ -62,6 +65,7 @@ const createCredito = async (req: Request, res: Response) => {
         const newCredito: types.Credito = await service.createCredito(reqCredito);
         return res.json(newCredito);
     } catch (error: unknown) {
+        console.error('createCredito error: ', error);
         return res.status(500).json(getErrorResponse(error));
     }
 }
@@ -89,6 +93,7 @@ const updateCredito = async (req: Request, res: Response) => {
         const updated = await service.updateCredito(creditoUpdate);
         return res.json(updated);
     } catch (error: unknown) {
+        console.error('updateCredito error: ', error);
         return res.status(500).json(getErrorResponse(error));
     }
 }
@@ -107,6 +112,7 @@ const deleteCredito = async (req: Request, res: Response) => {
             return res.status(200).json({ message: `ID no encontrado` });
         }
     } catch (error: unknown) {
+        console.error('deleteCredito error: ', error);
         return res.status(500).json(getErrorResponse(error));
     }
 }

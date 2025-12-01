@@ -259,7 +259,6 @@ const updateUserInfo = async (user: Usuario): Promise<Usuario> => {
             const roles = res.rows;
 
             const validatedRoles = roles.filter(r => user.roles?.includes(r.rol_nombre));
-            console.log('validatedRoles:', validatedRoles);
             if (validatedRoles.length === 0) {
                 throw new Error('Roles inválidos proporcionados');
             }

@@ -6,13 +6,11 @@ import serviceActividades from './actividades';
 import pool from './db';
 
 const getAllCreditos = async (): Promise<types.Credito[]> => {
-    console.log('getAll service');
     const cliente = await pool.connect();
 
     try {
         const query = 'SELECT credito_id, alu_id, act_id, cred_fecha FROM creditos';
         const res = await cliente.query(query);
-        console.log('rowCount', res.rowCount);
 
         const creditos: types.Credito[] = await Promise.all(
             res.rows.map(async (c: types.CreditoDB) => {
@@ -34,7 +32,6 @@ const getAllCreditos = async (): Promise<types.Credito[]> => {
                 }
             })
         )
-        console.log('out');
         return creditos;
     } catch (error: unknown) {
         throw error;
@@ -102,7 +99,6 @@ const getCreditoById = async (id: string): Promise<types.Credito> => {
             actividad: actividad,
             cred_fecha: creditoDb.cred_fecha
         }
-        console.log('credito', credito);
         return credito;
     } catch (error: unknown) {
         throw error;
@@ -123,8 +119,6 @@ const createCredito = async (credito: types.CreditoDB): Promise<types.Credito> =
 
         const res = await cliente.query(query, values);
         const newId = res.rows.length > 0 ? res.rows[0].credito_id : null;
-        console.log(newId);
-        console.log(typeof newId);
         if (!newId) {
             throw new Error('Error al crear el crédito');
         }
@@ -161,7 +155,6 @@ const updateCredito = async (credito: Partial<types.CreditoDB>): Promise<types.C
 
     try {
         const qUpdate = `UPDATE Creditos SET ${updateParams.join(', ')} WHERE credito_id = $${updateParams.length + 1}`;
-        console.log(qUpdate)
         updateValues.push(`${credito.credito_id}`);
         await cliente.query(qUpdate, updateValues);
 

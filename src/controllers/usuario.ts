@@ -5,7 +5,6 @@ import { Usuario } from '../types/usuario';
 const login = async (req: Request, res: Response) => {
     try {
         const { nombre, contraseña } = req.body;
-        console.log(nombre, contraseña);
 
         if (!nombre || !contraseña) {
             return res.status(400).json({

@@ -26,5 +26,6 @@ export type AlumnoCreditosReport = {
         docente: string;
         actividad: string;
         fecha: string;
+        creditos: number;
     }[];
 }
